@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Games! </title>
+</head>
+<body>
+    <h4>
+        Lista de Games
+    </h4>
+    <ul id="games">
+    </ul>
+    <hr>
+    <h4> Novo Game</h4>
+    <input type="text" name="title" id="title" placeholder="Title"/><br>
+    <input type="number" name="year" id="year" placeholder="Ano"/><br>
+    <input type="number" name="price" id="price" placeholder="Preço"/><br>
+    <button type="button" onclick="createGame()">Criar</button>
+
+    <hr>
+    <hr>
+    <h4>Editar Game</h4>
+    <input type="text" name="idEdit" id="idEdit" placeholder="ID" readonly/><br>
+    <input type="text" name="titleEdit" id="titleEdit" placeholder="Title"/><br>
+    <input type="number" name="yearEdit" id="yearEdit" placeholder="Ano"/><br>
+    <input type="number" name="priceEdit" id="priceEdit" placeholder="Preço"/><br>
+    <button type="button" onclick="updateGame()">Edit</button>
+    
+</body>
+<script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+<script>
+
+    function createGame(){
+        var titleInput = document.getElementById("title");
+        var yearInput = document.getElementById("year");
+        var priceInput = document.getElementById("price");
+    
+
+        var game = {
+            title: titleInput.value,
+            year: yearInput.value,
+            price: priceInput.value
+        }
+
+        console.log(game)
+
+        axios.post("http://localhost:8080/games", game).then(response =>{
+        console.log(response)
+        }).catch()
+    }
+
+    function deleteGame(listItem){
+        var id = listItem.getAttribute("data-id");
+        axios.delete("http://localhost:8080/games/"+id).then(response=>{
+            alert(`${listItem.getAttribute("data-title")} Deletado!`);
+        }).catch((err) => {
+            console.log(err)
+            alert("Jogo não deletado")
+        })
+    }
+
+    function loadForm(listItem){
+        var id = listItem.getAttribute("data-id")
+        var title = listItem.getAttribute("data-title")
+        var year = listItem.getAttribute("data-year")
+        var price = listItem.getAttribute("data-price")
+
+        document.getElementById("idEdit").value = id;
+        document.getElementById("titleEdit").value = title;
+        document.getElementById("yearEdit").value = year;
+        document.getElementById("priceEdit").value = price;
+
+    }
+
+    function updateGame(){
+        var titleInput = document.getElementById("titleEdit");
+        var yearInput = document.getElementById("yearEdit");
+        var priceInput = document.getElementById("priceEdit");
+        var idInput = document.getElementById("idEdit");
+        var id = idInput.value
+
+        var game = {
+            title: titleInput.value,
+            year: yearInput.value,
+            price: priceInput.value
+        }
+
+        console.log(game)
+
+        axios.put("http://localhost:8080/games/"+id, game).then(response =>{
+            console.log(response)
+            alert("Game Atualizado!")
+        }).catch()
+    }
+
+    
+
+    axios.get("http://localhost:8080/games").then(response => {
+        var games = response.data;
+        var list = document.getElementById("games");
+
+        games.forEach(game => {
+            var item = document.createElement("li");
+            item.setAttribute("data-id",game.id);
+            item.setAttribute("data-title",game.title);
+            item.setAttribute("data-price", game.price);
+            item.setAttribute("data-year", game.year);
+
+            item.innerHTML = `${game.title} lançado em ${game.year}`;
+            var deleteBtn = document.createElement("button");
+            deleteBtn.innerHTML = "Delete";
+            deleteBtn.addEventListener("click", function(){ deleteGame(item) });
+            item.appendChild(deleteBtn)
+
+            var editBtn = document.createElement("button");
+            editBtn.innerHTML = "Edit"
+            editBtn.addEventListener("click", function(){ loadForm(item) });
+            item.appendChild(editBtn)
+
+            list.appendChild(item)
+        });
+
+    }).catch(error => {
+
+    });
+</script>
+</html>
